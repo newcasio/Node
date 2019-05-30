@@ -28,14 +28,14 @@ AuthorSchema.virtual("lifespan").get(() => {
 });
 
 //virtual for author's URL
-AuthorSchema.virtual("url").get(() => {
-  return `/catalog/author/${this._id}`;
+AuthorSchema.virtual("url").get(function() {
+  return "/catalog/author/" + this._id;
 });
 
 AuthorSchema.virtual("birth_formatted").get(function() {
   return moment(this.date_of_birth).format("MMMM Do, YYYY");
 });
-AuthorSchema.virtual("death").get(function() {
+AuthorSchema.virtual("death_formatted").get(function() {
   return moment(this.date_of_death).format("MMMM Do, YYYY");
 });
 
