@@ -3,15 +3,62 @@
 //Controller determines what happens where a route is hit.  ie when a route is hit, one of these exports is called/invoked essentially controlling what happens, either calling to the DB or just returning a string (completing request), or pass along to next middleware.
 
 var Book = require("../models/book");
+var Author = require("../models/author");
+var Genre = require("../models/genre");
+var BookInstance = require("../models/bookinstance");
 
-//this is bookController (or whatever we use to import into routes file eg. book_controller).index
+var async = require("async");
+
+//this whole file is imported into catalog.js ( var book_catalog = require ('../controllers/bookController')).
+//this file export is called in catalog.js as book_catalog.index
+
+//async.parallel will run all callback functions simultaneously.  Result will be an object as object passed in as first argument.  Second argument is run when all async functions are complete, ie render page passing hardcoded data and data (results object) returned from the callbacks.
 exports.index = function(req, res) {
-  res.send("NOT IMPLEMENTED: Site Home Page");
+  async.parallel(
+    {
+      book_count: function(callback) {
+        Book.countDocuments({}, callback); // Pass an empty object as match condition to find all documents of this collection
+      },
+      book_instance_count: function(callback) {
+        BookInstance.countDocuments({}, callback);
+      },
+      book_instance_available_count: function(callback) {
+        BookInstance.countDocuments({ status: "Available" }, callback);
+      },
+      author_count: function(callback) {
+        Author.countDocuments({}, callback);
+      },
+      genre_count: function(callback) {
+        Genre.countDocuments({}, callback);
+      }
+    },
+    //this is invoked when all the callbacks above are completed.
+    function(err, results) {
+      //   res.send(results);
+      res.render("index", {
+        title: "Local Library Home",
+        error: err,
+        data: results
+        //moo: "Dodos"
+      });
+    }
+  );
 };
 
 // Display list of all books.  This is bookController.book_list
-exports.book_list = function(req, res) {
-  res.send("NOT IMPLEMENTED: Book list");
+exports.book_list = function(req, res, next) {
+  //find {} (all) books, returning only the title and author
+  Book.find({}, "title author")
+    // .populate will give full author details instead of just the reference author id, does another query to populate the author details
+    .populate("author")
+    .exec(function(err, list_books) {
+      if (err) {
+        return next(err);
+      }
+      //render 'book_list' template passing this object of data
+      res.render("book_list", { title: "Book List", book_list: list_books });
+      //   res.send(list_books);
+    });
 };
 
 // Display detail page for a specific book.  THis is bookController.book_detail

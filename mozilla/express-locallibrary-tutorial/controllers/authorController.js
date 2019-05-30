@@ -2,8 +2,21 @@
 var Author = require("../models/book");
 
 //show all authors
-exports.author_list = (req, res) => {
-  res.send("not implemented: AUthor list");
+exports.author_list = (req, res, next) => {
+  Author.find()
+    .sort([["family_name", "ascending"]])
+    .populate("author")
+    .exec(function(err, list_authors) {
+      if (err) {
+        return next(err);
+      }
+      //no errors
+      res.render("author_list", {
+        title: "Author List",
+        author_list: list_authors
+      });
+      // res.send(list_authors);
+    });
 };
 
 //show author with id = ?

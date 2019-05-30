@@ -8,10 +8,11 @@ var genre_controller = require("../controllers/genreController");
 var book_instance_controller = require("../controllers/bookInstanceController");
 
 //BOOK routes
+//all these routes have /catalog infront because in app.js we specify app.use("/catalog", catalogRouter);
+//catalogRouter is just the name we assign to the exported router object from this file when we import it into the app.js file.
 
 //get homepage
 router.get("/", book_controller.index);
-
 //get req for creating a book.
 router.get("/book/create", book_controller.book_create_get);
 
